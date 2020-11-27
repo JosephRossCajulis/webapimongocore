@@ -24,9 +24,9 @@ namespace WAPIMongoDBNetCore.Controllers
     [ApiController]
     public class CitizenController : ControllerBase
     {
-        private string connStr = ConfigurationManager.AppSettings["connstring"];
-        private string database = ConfigurationManager.AppSettings["database"];
-        private string collection = ConfigurationManager.AppSettings["collection"];
+        private string connStr = "";
+        private string database = "";
+        private string collection = "";
 
 
         public CitizenController()
