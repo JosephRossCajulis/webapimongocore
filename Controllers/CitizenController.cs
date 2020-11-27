@@ -32,9 +32,15 @@ namespace WAPIMongoDBNetCore.Controllers
 
         public CitizenController()
         {
+            #if (ConfigForEnv)
                 connStr = Environment.GetEnvironmentVariable("DATABASE_URL");
                 database = Environment.GetEnvironmentVariable("DATABASE_NAME");
                 collection = Environment.GetEnvironmentVariable("COLLECTION_NAME");
+            #else
+                connStr = ConfigurationManager.AppSettings["connstring"];
+                database = ConfigurationManager.AppSettings["database"];
+                collection = ConfigurationManager.AppSettings["collection"];
+            #endif
         }
 
         [Route("api/[controller]/GetCitizenDetails")]
