@@ -1,4 +1,10 @@
-﻿using System;
+﻿#if DEBUG
+#define ConfigForEnv
+#endif 
+#if PROD
+#endif
+
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -18,13 +24,27 @@ namespace WAPIMongoDBNetCore.Controllers
     [ApiController]
     public class CitizenController : ControllerBase
     {
-        private readonly string connStr = ConfigurationManager.AppSettings["connstring"];
-        private readonly string database = ConfigurationManager.AppSettings["database"];
-        private readonly string collection = ConfigurationManager.AppSettings["collection"];
+        private string connStr = ConfigurationManager.AppSettings["connstring"];
+        private string database = ConfigurationManager.AppSettings["database"];
+        private string collection = ConfigurationManager.AppSettings["collection"];
+
+
+        public CitizenController()
+        {
+            #if (ConfigForEnv)
+                connStr = Environment.GetEnvironmentVariable("DATABASE_URL");
+                database = Environment.GetEnvironmentVariable("DATABASE_NAME");
+                collection = Environment.GetEnvironmentVariable("COLLECTION_NAME");
+            #else
+                connStr = ConfigurationManager.AppSettings["connstring"];
+                database = ConfigurationManager.AppSettings["database"];
+                collection = ConfigurationManager.AppSettings["collection"];
+            #endif
+        }
 
         [Route("api/[controller]/GetCitizenDetails")]
         public ActionResult<object> Get()
-        {
+        { 
             DALOps dal = new DALOps(connStr, database);
             var dotNetObj = dal.GetCollection(dal, collection);
             return dotNetObj;
