@@ -1,4 +1,4 @@
-﻿#if DEBUG
+﻿#if DEV
 #define ConfigForEnv
 #endif 
 #if PROD
