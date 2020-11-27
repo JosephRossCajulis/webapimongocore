@@ -2,6 +2,7 @@
 #define ConfigForEnv
 #endif 
 #if PROD
+#define ConfigForEnv
 #endif
 
 using System;
