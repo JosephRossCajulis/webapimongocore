@@ -29,7 +29,6 @@ namespace WAPIMongoDBNetCore.Controllers
         private string database = "";
         private string collection = "";
 
-
         public CitizenController()
         {
             #if (ConfigForEnv)

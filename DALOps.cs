@@ -54,7 +54,6 @@ namespace WAPIMongoDBNetCore
             var coll = dal._database.GetCollection<BsonDocument>(collection);
             var returnDocument = coll.Find(new BsonDocument()).ToList();
 
-            //var dotNetObj = BsonTypeMapper.MapToDotNetValue(returnDocument);
             var dotNetObj = returnDocument.ConvertAll(BsonTypeMapper.MapToDotNetValue);
             JsonConvert.SerializeObject(dotNetObj);
 
