@@ -1,5 +1,5 @@
 ﻿#if DEV
-#define ConfigForEnv
+#define DALChanges1
 #endif 
 #if PROD
 #define ConfigForEnv
@@ -46,7 +46,13 @@ namespace WAPIMongoDBNetCore.Controllers
         public ActionResult<object> Get()
         { 
             DALOps dal = new DALOps(connStr, database);
+
+            #if DALChanges1
+            var dotNetObj = dal.GetCollection(collection);
+            #else
             var dotNetObj = dal.GetCollection(dal, collection);
+            #endif
+
             return dotNetObj;
         }
 
@@ -56,22 +62,13 @@ namespace WAPIMongoDBNetCore.Controllers
             DALOps dal = new DALOps(connStr, database);
             Dictionary<object, object> pairs = new Dictionary<object, object>();
             pairs.Add("citizenid", citizen_id);
+#if DALChanges1
+            var dotNetObj = dal.GetCollectionWithParams(collection, pairs);
+#else
             var dotNetObj = dal.GetCollectionWithParams(dal, collection, pairs);
-
+#endif
             return dotNetObj;
         }
-
-        ////[HttpGet]
-        ////[Route("GetCitizenDetailsTwoParam")]
-        ////public IHttpActionResult GetByTextAndStatus(string id, string status)
-        ////{
-        ////    DALOps dal = new DALOps(connStr, database);
-        ////    Dictionary<object, object> pairs = new Dictionary<object, object>();
-        ////    pairs.Add("text", id);
-        ////    pairs.Add("done", status);
-        ////    var dotNetObj = dal.GetCollectionWithParams(dal, collection, pairs);
-        ////    return Ok(dotNetObj);
-        ////}
 
 
         [HttpPost]
@@ -79,9 +76,18 @@ namespace WAPIMongoDBNetCore.Controllers
         public ActionResult<object> Post(Citizens citizen)
         {
             DALOps dal = new DALOps(connStr, database);
+#if DALChanges1
+            var coll = dal.GetCollectionCount(collection);
+#else
             var coll = dal.GetCollectionCount(dal, collection);
+#endif
             citizen.citizenid = "PH" + (coll + 1).ToString();
+
+#if DALChanges1
+            var dotNetObj = dal.InsertToCollection(collection, citizen);
+#else
             var dotNetObj = dal.InsertToCollection(dal, collection, citizen);
+#endif
             return dotNetObj;
         }
 
@@ -92,20 +98,13 @@ namespace WAPIMongoDBNetCore.Controllers
             DALOps dal = new DALOps(connStr, database);
             Dictionary<object, object> pairs = new Dictionary<object, object>();
             pairs.Add("citizenid", citizen.citizenid);
-            var dotNetObj = dal.UpdateCollection(dal, collection, citizen, pairs);
+#if DALChanges1
+            var dotNetObj = dal.UpdateCollection(collection, citizen, pairs);
+#else
+            var dotNetObj = dal.UpdateCollection(dal, collection, citizen);
+#endif
             return dotNetObj;
         }
-
-        //[System.Web.Http.HttpPut]
-        //[Route("api/[controller]/UpdateCitizenDetails")]
-        //public System.Web.Http.IHttpActionResult Put(Citizens citizen)
-        //{
-        //    DALOps dal = new DALOps(connStr, database);
-        //    Dictionary<object, object> pairs = new Dictionary<object, object>();
-        //    pairs.Add("citizenid", citizen.citizenid);
-        //    var dotNetObj = dal.UpdateCollection(dal, collection, citizen, pairs);
-        //    return (System.Web.Http.IHttpActionResult)Ok(dotNetObj);
-        //}
 
         private Citizens formModel(string id, string Cname, string Gender, string Email)
         {
@@ -122,7 +121,11 @@ namespace WAPIMongoDBNetCore.Controllers
         public ActionResult<object> Delete(string param)
         {
             DALOps dal = new DALOps(connStr, database);
+#if DALChanges1
+            var dotNetObj = dal.DeleteCollection(collection, "citizenid", param);
+#else
             var dotNetObj = dal.DeleteCollection(dal, collection, "citizenid", param);
+#endif
             return dotNetObj;
         }
 

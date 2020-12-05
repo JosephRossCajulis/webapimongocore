@@ -5,12 +5,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;PROD</DefineConstants>
+    <DefineConstants>DEV</DefineConstants>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DefineConstants>TRACE;PROD</DefineConstants>
+    <DefineConstants>DEV</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

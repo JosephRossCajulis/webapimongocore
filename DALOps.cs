@@ -60,6 +60,17 @@ namespace WAPIMongoDBNetCore
             return dotNetObj;
         }
 
+        public object GetCollection(string collection)
+        {
+            var coll = _database.GetCollection<BsonDocument>(collection);
+            var returnDocument = coll.Find(new BsonDocument()).ToList();
+
+            var dotNetObj = returnDocument.ConvertAll(BsonTypeMapper.MapToDotNetValue);
+            JsonConvert.SerializeObject(dotNetObj);
+
+            return dotNetObj;
+        }
+
         public int GetCollectionCount(DALOps dal, string collection)
         {
             var coll = dal._database.GetCollection<BsonDocument>(collection);
@@ -69,6 +80,18 @@ namespace WAPIMongoDBNetCore
 
             return count;
         }
+
+        public int GetCollectionCount(string collection)
+        {
+            var coll = _database.GetCollection<BsonDocument>(collection);
+            var returnDocument = coll.Find(new BsonDocument()).ToList();
+
+            var count = returnDocument.Count;
+
+            return count;
+        }
+
+
 
         /// <summary>
         /// Retrieves the content of the collection object with respect to the filters
@@ -84,11 +107,19 @@ namespace WAPIMongoDBNetCore
                 var filter = Builders<BsonDocument>.Filter.Eq(paramss.Keys.First().ToString(), paramss.Values.First().ToString());
                 var coll = dal._database.GetCollection<BsonDocument>(collection);
                 var returnDocument = coll.Find(filter).FirstOrDefault();
-                var dotNetObj = BsonTypeMapper.MapToDotNetValue(returnDocument);
-                //var dotNetObj = returnDocument.ConvertAll(BsonTypeMapper.MapToDotNetValue);
-                JsonConvert.SerializeObject(dotNetObj);
 
-                return dotNetObj;
+                if (returnDocument == null)
+                {
+                    string dd = "No record found";
+                    JsonConvert.SerializeObject(dd);
+                    return dd;
+                }
+                else
+                {
+                    var dotNetObj = BsonTypeMapper.MapToDotNetValue(returnDocument);
+                    JsonConvert.SerializeObject(dotNetObj);
+                    return dotNetObj;
+                }
             }
             else
             {
@@ -115,6 +146,45 @@ namespace WAPIMongoDBNetCore
             }
         }
 
+        public object GetCollectionWithParams(string collection, Dictionary<object, object> paramss)
+        {
+            if (paramss.Count == 1)
+            {
+                var filter = Builders<BsonDocument>.Filter.Eq(paramss.Keys.First().ToString(), paramss.Values.First().ToString());
+                var coll = _database.GetCollection<BsonDocument>(collection);
+                var returnDocument = coll.Find(filter).FirstOrDefault();
+                var dotNetObj = BsonTypeMapper.MapToDotNetValue(returnDocument);
+                //var dotNetObj = returnDocument.ConvertAll(BsonTypeMapper.MapToDotNetValue);
+                JsonConvert.SerializeObject(dotNetObj);
+
+                return dotNetObj;
+            }
+            else
+            {
+                var filter = Builders<BsonDocument>.Filter.Eq(paramss.Keys.First().ToString(), paramss.Values.First().ToString());
+                for (int i = 1; i < paramss.Count; i++)
+                {
+                    var key = paramss.Keys.ElementAt(i).ToString();
+                    var value = paramss.Values.ElementAt(i).ToString();
+
+                    if ((value.ToString().ToLowerInvariant() == "true") || (value.ToString().ToLowerInvariant() == "false"))
+                    { filter = filter & (Builders<BsonDocument>.Filter.Eq(key, Convert.ToBoolean(value))); }
+                    else
+                    { filter = filter & (Builders<BsonDocument>.Filter.Eq(key, value)); }
+
+
+                }
+                var coll = _database.GetCollection<BsonDocument>(collection);
+                var returnDocument = coll.Find(filter).FirstOrDefault();
+                var dotNetObj = BsonTypeMapper.MapToDotNetValue(returnDocument);
+                //var dotNetObj = returnDocument.ConvertAll(BsonTypeMapper.MapToDotNetValue);
+                JsonConvert.SerializeObject(dotNetObj);
+
+                return dotNetObj;
+            }
+        }
+
+
         /// <summary>
         /// Inserts a model object into the collection
         /// </summary>
@@ -125,6 +195,20 @@ namespace WAPIMongoDBNetCore
         public object InsertToCollection(DALOps dal, string collection, object item)
         {
             var coll = dal._database.GetCollection<BsonDocument>(collection);
+
+            var returnDocument = new BsonDocument(item.ToBsonDocument());
+            returnDocument.Remove("_t");
+            coll.InsertOne(returnDocument);
+
+            var dotNetObj = BsonTypeMapper.MapToDotNetValue(returnDocument);
+            JsonConvert.SerializeObject(dotNetObj);
+
+            return dotNetObj;
+        }
+
+        public object InsertToCollection(string collection, object item)
+        {
+            var coll = _database.GetCollection<BsonDocument>(collection);
 
             var returnDocument = new BsonDocument(item.ToBsonDocument());
             returnDocument.Remove("_t");
@@ -184,6 +268,46 @@ namespace WAPIMongoDBNetCore
             }
         }
 
+        public object UpdateCollection(string collection, object item, Dictionary<object, object> paramss)
+        {
+            if (paramss.Count == 1)
+            {
+                var filter = Builders<BsonDocument>.Filter.Eq(paramss.Keys.First().ToString(), paramss.Values.First().ToString());
+                var updatedDoc = item.ToBsonDocument();
+                updatedDoc.Remove("_t");
+                updatedDoc.Remove("_id");
+                var coll = _database.GetCollection<BsonDocument>(collection);
+                var returnDocument = coll.ReplaceOne(filter, updatedDoc);
+                JsonConvert.SerializeObject(returnDocument);
+
+                return returnDocument;
+            }
+            else
+            {
+                var filter = Builders<BsonDocument>.Filter.Eq(paramss.Keys.First().ToString(), paramss.Values.First().ToString());
+                for (int i = 1; i < paramss.Count; i++)
+                {
+                    var key = paramss.Keys.ElementAt(i).ToString();
+                    var value = paramss.Values.ElementAt(i).ToString();
+
+                    if ((value.ToString().ToLowerInvariant() == "true") || (value.ToString().ToLowerInvariant() == "false"))
+                    { filter = filter & (Builders<BsonDocument>.Filter.Eq(key, Convert.ToBoolean(value))); }
+                    else
+                    { filter = filter & (Builders<BsonDocument>.Filter.Eq(key, value)); }
+
+
+                }
+                var updatedDoc = item.ToBsonDocument();
+                updatedDoc.Remove("_t");
+                updatedDoc.Remove("_id");
+                var coll = _database.GetCollection<BsonDocument>(collection);
+                var returnDocument = coll.UpdateOne(filter, updatedDoc);
+                JsonConvert.SerializeObject(returnDocument);
+
+                return returnDocument;
+            }
+        }
+
         /// <summary>
         /// Deletes a model object into the collection with respect to the search parameters
         /// </summary>
@@ -195,6 +319,16 @@ namespace WAPIMongoDBNetCore
         public object DeleteCollection(DALOps dal, string collection, string key, string param)
         {
             var coll = dal._database.GetCollection<BsonDocument>(collection);
+            var filter = Builders<BsonDocument>.Filter.Eq(key, param);
+            var res = coll.DeleteOne(filter);
+
+            JsonConvert.SerializeObject(res);
+            return res;
+        }
+
+        public object DeleteCollection(string collection, string key, string param)
+        {
+            var coll = _database.GetCollection<BsonDocument>(collection);
             var filter = Builders<BsonDocument>.Filter.Eq(key, param);
             var res = coll.DeleteOne(filter);
 
